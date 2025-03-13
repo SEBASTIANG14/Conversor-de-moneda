@@ -1,74 +1,117 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, StyleSheet } from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import { CurrencyConverterModel } from "../models/CurrencyConverterModel";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const exchangeRates = {
+  USD: 1,    // Dólar estadounidense (moneda base)
+  MXN: 20,   // Peso mexicano
+  EUR: 0.85, // Euro
+  JPY: 130,  // Yen japonés
+  CNY: 6.5,  // Yuan chino
+};
 
-export default function HomeScreen() {
+const model = new CurrencyConverterModel(exchangeRates);
+
+export default function CurrencyConverter() {
+  const [amount1, setAmount1] = useState("1");
+  const [currency1, setCurrency1] = useState("MXN");
+  const [amount2, setAmount2] = useState("0.00");
+  const [currency2, setCurrency2] = useState("USD");
+
+  useEffect(() => {
+    convertAmount(amount1, currency1, currency2, setAmount2);
+  }, [amount1, currency1, currency2]);
+
+  const convertAmount = (
+    amount: string,
+    from: string,
+    to: string,
+    setResult: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    const value = parseFloat(amount);
+    if (!isNaN(value)) {
+      const converted = model.convert(value, from, to);
+      setResult(converted.toFixed(2));
+    } else {
+      setResult("0.00");
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <View style={styles.container}>
+      <Text style={styles.title}>💰 Conversor de Monedas</Text>
+      <View style={styles.row}>
+        <TextInput
+          value={amount1}
+          onChangeText={(text) => setAmount1(text === "" ? "0.00" : text)}
+          keyboardType="numeric"
+          style={styles.input}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <Picker
+          selectedValue={currency1}
+          onValueChange={(itemValue) => setCurrency1(itemValue)}
+          style={styles.picker}
+        >
+          {Object.keys(exchangeRates).map((currency) => (
+            <Picker.Item key={currency} label={currency} value={currency} />
+          ))}
+        </Picker>
+      </View>
+
+      <View style={styles.row}>
+        <TextInput
+          value={amount2}
+          onChangeText={(text) => convertAmount(text === "" ? "0.00" : text, currency2, currency1, setAmount1)}
+          keyboardType="numeric"
+          style={styles.input}
+        />
+        <Picker
+          selectedValue={currency2}
+          onValueChange={(itemValue) => setCurrency2(itemValue)}
+          style={styles.picker}
+        >
+          {Object.keys(exchangeRates).map((currency) => (
+            <Picker.Item key={currency} label={currency} value={currency} />
+          ))}
+        </Picker>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#1E1E1E",
+    padding: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "90%",
+    backgroundColor: "#2E2E2E",
+    borderRadius: 10,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+    color: "#fff",
+    fontSize: 18,
+    paddingHorizontal: 10,
+  },
+  picker: {
+    width: 150,
+    color: "#fff",
   },
 });
