@@ -4,7 +4,7 @@ import { Picker } from "@react-native-picker/picker";
 import { CurrencyConverterModel } from "../models/CurrencyConverterModel";
 
 const exchangeRates = {
-  USD: 1,    // Dólar estadounidense (moneda base)
+  USD: 1,    // Dólar estadounidense (base)
   MXN: 20,   // Peso mexicano
   EUR: 0.85, // Euro
   JPY: 130,  // Yen japonés
@@ -34,18 +34,22 @@ export default function CurrencyConverter() {
       const converted = model.convert(value, from, to);
       setResult(converted.toFixed(2));
     } else {
-      setResult("0.00");
+      setResult("");
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>💰 Conversor de Monedas</Text>
+
+      {/* Primer input */}
       <View style={styles.row}>
         <TextInput
           value={amount1}
-          onChangeText={(text) => setAmount1(text === "" ? "0.00" : text)}
+          onChangeText={setAmount1}
           keyboardType="numeric"
+          placeholder="0.00"
+          placeholderTextColor="#888"
           style={styles.input}
         />
         <Picker
@@ -59,11 +63,14 @@ export default function CurrencyConverter() {
         </Picker>
       </View>
 
+      {/* Segundo input */}
       <View style={styles.row}>
         <TextInput
           value={amount2}
-          onChangeText={(text) => convertAmount(text === "" ? "0.00" : text, currency2, currency1, setAmount1)}
+          onChangeText={(text) => convertAmount(text, currency2, currency1, setAmount1)}
           keyboardType="numeric"
+          placeholder="0.00"
+          placeholderTextColor="#888"
           style={styles.input}
         />
         <Picker
